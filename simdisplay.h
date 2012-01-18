@@ -20,11 +20,7 @@ protected:
 
 private:
   World *world;
-  GdkEventButton *buttonpress;
-
-  int x[100];
-  double y[100];
-  int replace;
+  int step_count;
 };
 
 #endif // GTKMM_EXAMPLE_MYAREA_H
