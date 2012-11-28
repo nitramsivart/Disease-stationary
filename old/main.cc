@@ -9,7 +9,7 @@ int main(int argc, char** argv)
 
    Gtk::Window win;
    win.set_title("Plague Simulator");
-   win.set_default_size(1000, 1000);
+   win.set_default_size(600, 600);
 
    SimDisplay area;
    win.add(area);

@@ -23,15 +23,19 @@ World::World() {
   for (int i = 0; i < master_count; i++)  
    master_matrix[i] = (unsigned long*) malloc(master_count*sizeof(long));  
   
-  populate_matrix(master_matrix, master_list, master_count, &World::pow_dist);
+  populate_matrix(master_matrix, master_list, master_count, &World::exp_dist);
   //we need to generate pairwise probabilities. Assuming this person gets the disease, 
   //what is the expected number of days to pass it to one of his neighbors, based on the contact distribution
   //ceil(log(1-x)/log(1-p))
   simtime = 0;
 
   //make a priority queue so that the lowest number is first. this will contain infection times for everybody
-
-  infect(0);
+  int closest_index = 0;
+  for (int i = 0; i < master_count; i++) {
+    if(toroidal_distance(master_list[i].x, .5, master_list[i].y, .5) < toroidal_distance(master_list[closest_index].x, .5, master_list[closest_index].y, .5))
+      closest_index = i;
+  }
+  infect(closest_index);
 }
 
 World::~World() {
@@ -95,13 +99,16 @@ float World::pow_dist(float d) {
 // Creates a list of n people for the world, currently uniformly
 // randomly distributed on a (0, 1) torus.
 int World::generate_people(person **all_people, int n) {
-  int count = populate_people(*all_people, n);
-	//int i;
-	//for(i = 0; i < n; i++) {
-		//populate_person(&all_people[i]);
-	//}
+  //int count = populate_people(*all_people, n);
+  printf("generating people\n");
+	int i;
+	for(i = 0; i < n; i++) {
+    printf("person %d\n", i);
+		populate_person(&((*all_people)[i]));
+	}
+  printf("done generating people\n");
   
-	return count;
+	return NUM_PEOPLE;//count;
 }
 
 // Infect the person in master_list at given index and update counters
@@ -109,7 +116,7 @@ int World::infect(int index) {
   //many times we will try to infect somebody who is already infected.
   //in this case do nothing.
   if(master_list[index].status == SUSCEPTIBLE) {
-    master_list[index].status = DAYS_INFECTED;
+    master_list[index].status = 1; //DAYS_INFECTED;
 
     unsigned long infect_time;
     //go through and add all neighbors to the priority queue
@@ -150,9 +157,9 @@ int World::cure(int index) {
 int World::progress_sickness(int index) {
 
   //people don't get better, so we are under the SI model
-  //master_list[index].status--;
-  if(master_list[index].status == SUSCEPTIBLE)
-    cure(index);
+  master_list[index].status++;
+  //if(master_list[index].status == SUSCEPTIBLE)
+  //  cure(index);
 }
 
 
@@ -218,6 +225,13 @@ bool World::step() {
     infect(master_queue.top().first);
     master_queue.pop();
   }
+
+  int i = 0;
+  for (i = 0; i < master_count; i++) {
+    if(master_list[i].status > 0) {
+      master_list[i].status++;
+    }
+  }
   return (num_i != 0);
 }
 
@@ -244,6 +258,7 @@ bool World::contact_occurs(person a, person b) {
 float World::toroidal_distance(float x1, float x2, float y1, float y2) {
   float dx = x1 - x2;
   float dy = y1 - y2;
+  /*
   if(dx < 0)
     dx = dx * -1.0;
   if(dy < 0)
@@ -253,6 +268,7 @@ float World::toroidal_distance(float x1, float x2, float y1, float y2) {
     dx = 1.0 - dx;
   if(dy > .5)
     dy = 1.0 - dy;
+  */
 
   // toroidal distance between people (max = sqrt(2)/2)
   return sqrt(dx*dx + dy*dy);

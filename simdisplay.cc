@@ -1,12 +1,14 @@
 #include "simdisplay.h"
-#include <cairomm/context.h>
 #include <cmath>
+
 
 // Constructor creates the world which contains all simulation information.
 SimDisplay::SimDisplay()
 {
   step_count = 100;
   world = new World();
+  surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, 1000, 1000);
+
     
   #ifndef GLIBMM_DEFAULT_SIGNAL_HANDLERS_ENABLED
   //Connect the signal handler if it isn't already a virtual method override:
@@ -17,6 +19,8 @@ SimDisplay::SimDisplay()
 
 SimDisplay::~SimDisplay()
 {
+  std::string filename = "image.png";
+  surface->write_to_png(filename);
 }
 
 // When the mouse is clicked the simulation is progressed.
@@ -42,7 +46,10 @@ bool SimDisplay::refresh() {
 
 bool SimDisplay::on_expose_event(GdkEventExpose* event) {
   printf("expose\n");
-  on_draw(get_window()->create_cairo_context());
+
+  Cairo::RefPtr<Cairo::Context> c = Cairo::Context::create(surface);
+  on_draw(c);
+  //get_window()->create_cairo_context());
   //if(buttonpress != NULL)
     //perform_step();
   return true;
@@ -55,8 +62,8 @@ bool SimDisplay::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
   printf("drawing\n");
   // This is where we draw on the window
     Gtk::Allocation allocation = get_allocation();
-    const int width = allocation.get_width();
-    const int height = allocation.get_height();
+    const int width = 1000;//allocation.get_width();
+    const int height = 1000;//allocation.get_height();
     int lesser = MIN(width, height);
 
     // coordinates for the center of the window
@@ -64,7 +71,7 @@ bool SimDisplay::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
     xc = width / 2;
     yc = height / 2;
 
-    cr->set_line_width(lesser * 0.00001);  // outline thickness changes
+    cr->set_line_width(lesser * 0.00001 * 1);  // outline thickness changes
                                         // with window size
 
     /* Draw all of our people */
@@ -80,7 +87,26 @@ bool SimDisplay::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
       else if(people[i].status < 0) 
         cr->set_source_rgba(0.0, 1.0, 0.0, 0.7);
       else 
-        cr->set_source_rgba(((float)people[i].status)/DAYS_INFECTED, 0.0, 0.0, .7);
+        switch(people[i].status) {
+          case 6:
+            cr->set_source_rgba(0.0, 0.6, 0.0, .8); // dark green
+            break;
+          case 5:
+            cr->set_source_rgba(0.0, 1.0, 0.05, .8); // green
+            break;
+          case 4:
+            cr->set_source_rgba(1.0, .93, 0.3, 1.0); // yellow
+            break;
+          case 3:
+            cr->set_source_rgba(0.9, .5, 0.00, .8); // orange
+            break;
+          case 2:
+            cr->set_source_rgba(1.0, 0.0, 0.0, .7); // red
+            break;
+          default:
+            cr->set_source_rgba(1.0, 0.0, 0.0, .7); // red
+        }
+        //cr->set_source_rgba(((float)people[i].status)/DAYS_INFECTED, 0.0, 0.0, .7);
       cr->fill_preserve();
       cr->restore();  // back to opaque black
       cr->stroke();
