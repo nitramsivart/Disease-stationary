@@ -12,7 +12,7 @@ SimDisplay::SimDisplay()
     
   #ifndef GLIBMM_DEFAULT_SIGNAL_HANDLERS_ENABLED
   //Connect the signal handler if it isn't already a virtual method override:
-  signal_draw().connect(sigc::mem_fun(*this, &SimDisplay::on_draw), false);
+  //signal_draw().connect(sigc::mem_fun(*this, &SimDisplay::on_draw), false);
   #endif //GLIBMM_DEFAULT_SIGNAL_HANDLERS_ENABLED
   //Glib::signal_timeout().connect( sigc::mem_fun(*this, &SimDisplay::refresh), 200 );
 }
@@ -29,7 +29,7 @@ bool SimDisplay::on_button_press_event(GdkEventButton* event) {
   printf("on_button_press_event\n");
   //buttonpress = event;
   //Glib::signal_timeout().connect( sigc::mem_fun(*this, &SimDisplay::perform_step), 500 );
-  //refresh();
+  refresh();
   perform_step();
 }
 
@@ -40,7 +40,7 @@ bool SimDisplay::perform_step() {
 
 bool SimDisplay::refresh() {
   printf("refresh\n");
-  //gdk_window_invalidate_rect(get_window()->gobj(), NULL, true);
+  gdk_window_invalidate_rect(get_window()->gobj(), NULL, true);
   get_window()->invalidate(true);
 }
 
