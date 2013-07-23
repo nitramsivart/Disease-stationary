@@ -5,6 +5,13 @@
 #include <gtkmm/drawingarea.h>
 #include <cairomm/context.h>
 #include <cairomm/surface.h>
+#define R1  255./255., 153./255., 153./255.
+#define R2  255./255., 102./255., 102./255.
+#define R3  255./255., 051./255., 051./255.
+#define R4  255./255., 0./255., 0./255.
+#define R5  191./255., 0./255., 0./255.
+#define R6  128./255., 0./255., 0./255.
+#define R7  64./255., 0./255., 0./255.
 
 
 class SimDisplay : public Gtk::DrawingArea
@@ -24,7 +31,7 @@ protected:
 private:
   World *world;
   int step_count;
-  Cairo::RefPtr<Cairo::ImageSurface> surface;
+  Cairo::RefPtr<Cairo::PdfSurface> surface;
 
 };
 

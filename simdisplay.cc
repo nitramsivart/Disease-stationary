@@ -1,13 +1,12 @@
 #include "simdisplay.h"
 #include <cmath>
 
-
 // Constructor creates the world which contains all simulation information.
 SimDisplay::SimDisplay()
 {
   step_count = 100;
   world = new World();
-  surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, 1000, 1000);
+  surface = Cairo::PdfSurface::create("image.pdf", 1000, 1000);
 
     
   #ifndef GLIBMM_DEFAULT_SIGNAL_HANDLERS_ENABLED
@@ -19,8 +18,9 @@ SimDisplay::SimDisplay()
 
 SimDisplay::~SimDisplay()
 {
-  std::string filename = "image.png";
-  surface->write_to_png(filename);
+  //std::string filename = "image.pdf";
+  //surface->write_to_pdf(filename);
+  surface->finish();
 }
 
 // When the mouse is clicked the simulation is progressed.
@@ -74,6 +74,7 @@ bool SimDisplay::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
     cr->set_line_width(lesser * 0.00001 * 1);  // outline thickness changes
                                         // with window size
 
+    
     /* Draw all of our people */
     World::person *people = world->get_people();
     int i;
@@ -83,28 +84,28 @@ bool SimDisplay::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
       yc = people[i].y * height;
       cr->arc(xc, yc, lesser / 200.0, 0.0, 2.0 * M_PI); // full circle
       if(people[i].status == 0)
-        cr->set_source_rgba(0.0, 0.0, 1.0, 0.7);    // partially translucent
+        cr->set_source_rgba(0.8,0.8,0.8, .7);    // partially translucent
       else if(people[i].status < 0) 
-        cr->set_source_rgba(0.0, 1.0, 0.0, 0.7);
+        cr->set_source_rgba(R7, 0.9);
       else 
         switch(people[i].status) {
           case 6:
-            cr->set_source_rgba(0.0, 0.6, 0.0, .8); // dark green
+            cr->set_source_rgba(R5, .9); // dark green
             break;
           case 5:
-            cr->set_source_rgba(0.0, 1.0, 0.05, .8); // green
+            cr->set_source_rgba(R4, .9); // green
             break;
           case 4:
-            cr->set_source_rgba(1.0, .93, 0.3, 1.0); // yellow
+            cr->set_source_rgba(R3, .9); // yellow
             break;
           case 3:
-            cr->set_source_rgba(0.9, .5, 0.00, .8); // orange
+            cr->set_source_rgba(R2, .9); // orange
             break;
           case 2:
-            cr->set_source_rgba(1.0, 0.0, 0.0, .7); // red
+            cr->set_source_rgba(R1, .9); // red
             break;
           default:
-            cr->set_source_rgba(1.0, 0.0, 0.0, .7); // red
+            cr->set_source_rgba(R6, .9); // red
         }
         //cr->set_source_rgba(((float)people[i].status)/DAYS_INFECTED, 0.0, 0.0, .7);
       cr->fill_preserve();

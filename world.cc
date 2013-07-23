@@ -23,7 +23,7 @@ World::World() {
   for (int i = 0; i < master_count; i++)  
    master_matrix[i] = (unsigned long*) malloc(master_count*sizeof(long));  
   
-  populate_matrix(master_matrix, master_list, master_count, &World::exp_dist);
+  populate_matrix(master_matrix, master_list, master_count, &World::pow_dist);
   //we need to generate pairwise probabilities. Assuming this person gets the disease, 
   //what is the expected number of days to pass it to one of his neighbors, based on the contact distribution
   //ceil(log(1-x)/log(1-p))

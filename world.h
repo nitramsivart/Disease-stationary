@@ -1,9 +1,11 @@
 #define PERSON_BUFFER 100
 #define NUM_PEOPLE    10000
 #define DAYS_INFECTED 10
-#define EXP_PARAMETER 53.0
+//#define EXP_PARAMETER 53.0
+#define EXP_PARAMETER 70.0
 #define POW_ALPHA     4
-#define POW_R_0       50.0
+//#define POW_R_0       50.0
+#define POW_R_0       70.0
 #define SUSCEPTIBLE   0
 #define RECOVERED     -1
 #define MAX_SIM_TIME  300
