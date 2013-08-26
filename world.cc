@@ -19,17 +19,15 @@ World::World() {
   num_s = master_count;
   num_r = 0;
   printf("master_count: %d\n", master_count);
-  master_matrix = (unsigned long**) malloc(master_count * sizeof(long*));
-  for (int i = 0; i < master_count; i++)  
-   master_matrix[i] = (unsigned long*) malloc(master_count*sizeof(long));  
+  //master_matrix = (unsigned long**) malloc(master_count * sizeof(long*));
+  //for (int i = 0; i < master_count; i++)  
+   //master_matrix[i] = (unsigned long*) malloc(master_count*sizeof(long));  
   
-  populate_matrix(master_matrix, master_list, master_count, &World::exp_dist);
+  //populate_matrix(master_matrix, master_list, master_count, &World::exp_dist);
   //we need to generate pairwise probabilities. Assuming this person gets the disease, 
   //what is the expected number of days to pass it to one of his neighbors, based on the contact distribution
   //ceil(log(1-x)/log(1-p))
   simtime = 0;
-
-  //make a priority queue so that the lowest number is first. this will contain infection times for everybody
   int closest_index = 0;
   for (int i = 0; i < master_count; i++) {
     if(toroidal_distance(master_list[i].x, .5, master_list[i].y, .5) < toroidal_distance(master_list[closest_index].x, .5, master_list[closest_index].y, .5))
@@ -127,7 +125,8 @@ int World::infect(int index) {
   //in this case do nothing.
   if(master_list[index].status == SUSCEPTIBLE) {
     master_list[index].status = 1; //DAYS_INFECTED;
-
+    infected.push_back(&master_list[index]);
+    /*
     unsigned long infect_time;
     //go through and add all neighbors to the priority queue
     for(int j = 0; j < master_count; j++) {
@@ -137,6 +136,7 @@ int World::infect(int index) {
       if(infect_time < MAX_SIM_TIME)
         master_queue.push(std::make_pair(j, infect_time));
     }
+    */
     num_i++;
     num_s--;
   }
@@ -239,6 +239,18 @@ bool World::step() {
   simtime++;
 
   printf("simtime: %d\n", simtime);
+  int start_size = infected.size();
+  for(int i = 0; i < start_size; i++) {
+    float rand_index = rand() % NUM_PEOPLE;
+    infect(rand_index);
+  }
+  for(int i = 0; i < master_count; i++) {
+    if(master_list[i].status > 0) {
+      master_list[i].status++;
+    }
+  }
+  return (num_i != 0);
+
 
   while(master_queue.top().second <= simtime) {
     infect(master_queue.top().first);

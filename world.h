@@ -11,6 +11,7 @@
 #define MAX_SIM_TIME  300
 
 #include <queue>
+#include <vector>
 
 class World
 {
@@ -80,5 +81,7 @@ private:
 
   typedef std::priority_queue< std::pair<int, int>, std::vector<std::pair<int,int> >, sort_pred > personPQ;
 
+  std::vector<person*> infected;
   personPQ master_queue;
+  
 };
