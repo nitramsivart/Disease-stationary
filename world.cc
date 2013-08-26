@@ -23,7 +23,7 @@ World::World() {
   for (int i = 0; i < master_count; i++)  
    master_matrix[i] = (unsigned long*) malloc(master_count*sizeof(long));  
   
-  populate_matrix(master_matrix, master_list, master_count, &World::pow_dist);
+  populate_matrix(master_matrix, master_list, master_count, &World::exp_dist);
   //we need to generate pairwise probabilities. Assuming this person gets the disease, 
   //what is the expected number of days to pass it to one of his neighbors, based on the contact distribution
   //ceil(log(1-x)/log(1-p))
@@ -84,7 +84,12 @@ float World::exp_dist(float d) {
   float u = rand()/((float)RAND_MAX + 1);
 
   // exponential random variable
-  return exp(-EXP_PARAMETER * d);
+  int a = 1;
+  int b = 2;
+  int c = 3;
+  float r = d * 100;
+  return pow(a+r, -b) * exp(-r / c);
+  //return exp(-EXP_PARAMETER * d);
 }
 
 float World::pow_dist(float d) {
@@ -92,7 +97,12 @@ float World::pow_dist(float d) {
   float u = rand()/((float)RAND_MAX + 1);
 
   // power law random variable
-  return pow(1 + pow(d*POW_R_0, POW_ALPHA), -1);
+  int a = 1;
+  int b = 2;
+  int c = 300;
+  float r = d * 50;
+  return pow(a+r, -b) * exp(-r / c);
+  //return pow(1 + pow(d*POW_R_0, POW_ALPHA), -1);
 }
 
 	
