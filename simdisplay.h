@@ -18,7 +18,7 @@ class SimDisplay : public Gtk::DrawingArea
 {
 public:
   SimDisplay();
-  virtual ~SimDisplay();
+  ~SimDisplay();
 
 protected:
   //Override default signal handler:

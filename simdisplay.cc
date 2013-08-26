@@ -4,9 +4,11 @@
 // Constructor creates the world which contains all simulation information.
 SimDisplay::SimDisplay()
 {
-  step_count = 100;
+  step_count = 8;
   world = new World();
   surface = Cairo::PsSurface::create("image.ps", 1000, 1000);
+  for(int i = 0; i < step_count; i++)
+    world->step();
 
     
   #ifndef GLIBMM_DEFAULT_SIGNAL_HANDLERS_ENABLED
@@ -34,6 +36,7 @@ bool SimDisplay::on_button_press_event(GdkEventButton* event) {
 }
 
 bool SimDisplay::perform_step() {
+    printf("performing step\n");
     world->step();
     refresh();
 }
@@ -82,7 +85,9 @@ bool SimDisplay::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
       cr->save();
       xc = people[i].x * width;
       yc = people[i].y * height;
-      cr->arc(xc, yc, lesser / 200.0, 0.0, 2.0 * M_PI); // full circle
+      double sq = (width / (sqrt(world->get_count())+1));
+      cr->rectangle(xc - sq/2, yc - sq/2, sq, sq); // rectangle
+      //cr->arc(xc, yc, lesser / 800.0, 0.0, 2.0 * M_PI); // full circle
       if(people[i].status == 0)
         cr->set_source_rgba(0.8,0.8,0.8, 1);    // partially translucent
       else if(people[i].status < 0) 

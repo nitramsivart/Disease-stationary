@@ -1,5 +1,5 @@
 #define PERSON_BUFFER 100
-#define NUM_PEOPLE    10000
+#define NUM_PEOPLE    6400
 #define DAYS_INFECTED 10
 //#define EXP_PARAMETER 53.0
 #define EXP_PARAMETER 70.0
@@ -20,8 +20,8 @@ public:
     // 1 - 254 = Infected
     // 255 = Dead/safe/recovered
     char status;
-    float x;
-    float y;
+    double x;
+    double y;
   } person;
 
   World();
@@ -34,7 +34,8 @@ public:
 
 private:
   int generate_people(person **, int);
-  int populate_person(person *);
+  int populate_person_rand(person *);
+  int populate_person_grid(person *, int, int, int);
   int populate_people(person *, int);
   int print_person(char *, person *);
   bool contact_occurs(person, person);

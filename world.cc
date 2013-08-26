@@ -114,7 +114,7 @@ int World::generate_people(person **all_people, int n) {
 	int i;
 	for(i = 0; i < n; i++) {
     printf("person %d\n", i);
-		populate_person(&((*all_people)[i]));
+		populate_person_grid(&((*all_people)[i]), i, (int)sqrt(n), (int)sqrt(n));
 	}
   printf("done generating people\n");
   
@@ -188,10 +188,19 @@ int World::print_people(person* list) {
 }
 	
 // Creates a person with a random location between 0 and 1
-int World::populate_person(person * p) {
+int World::populate_person_rand(person * p) {
 	p->status = 0;
 	p->x = rand()/((float)RAND_MAX + 1);
 	p->y = rand()/((float)RAND_MAX + 1);
+	return 0;
+}
+
+// Creates a person on a grid
+int World::populate_person_grid(person * p, int index, int rows, int cols) {
+	p->status = 0;
+  double wid = 1.0 / (rows+1);
+	p->x = (index % cols) * wid + wid;
+	p->y = (index/cols) * wid + wid;
 	return 0;
 }
 
