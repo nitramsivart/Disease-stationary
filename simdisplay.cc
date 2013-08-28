@@ -4,10 +4,11 @@
 // Constructor creates the world which contains all simulation information.
 SimDisplay::SimDisplay()
 {
-  step_count = 35;
+  step_count = 45;
   world = new World();
   int grid_wid = sqrt(world->get_count());
-  surface = Cairo::PsSurface::create("image-3.ps", grid_wid, grid_wid);
+  surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, grid_wid, grid_wid);
+  //surface = Cairo::PsSurface::create("image-3.ps", grid_wid, grid_wid);
   for(int i = 0; i < step_count; i++)
     world->step();
 
@@ -23,6 +24,8 @@ SimDisplay::~SimDisplay()
 {
   //std::string filename = "image.pdf";
   //surface->write_to_pdf(filename);
+  std::string filename = "image.png";
+  surface->write_to_png(filename);
   surface->finish();
 }
 

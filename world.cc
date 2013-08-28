@@ -184,7 +184,7 @@ bool World::step() {
     //int lowest_indices[] = {-1,-1,-1,-1,-1,-1,-1,-1};
     int p2_index = 0;
     while(true) {
-      double r = pow_dist(0);
+      double r = exp_dist(0);
       double theta = 2 * M_PI * rand()/((double)RAND_MAX+1);
       double x = p1.x + r * cos(theta);
       double y = p1.y + r * sin(theta);
@@ -202,7 +202,7 @@ bool World::step() {
       p2_index = row * grid_wid + col;
       break;
     }
-    double kappa = 1;
+    double kappa = .9;
     if((rand()/((double)RAND_MAX + 1)) < kappa)
       infect(p2_index);
   }

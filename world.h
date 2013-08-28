@@ -1,5 +1,5 @@
 #define PERSON_BUFFER 100
-#define NUM_PEOPLE    250000
+#define NUM_PEOPLE    1000000
 #define DAYS_INFECTED 10
 //#define EXP_PARAMETER 53.0
 #define EXP_PARAMETER 70.0

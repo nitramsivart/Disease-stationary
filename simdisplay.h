@@ -31,7 +31,7 @@ protected:
 private:
   World *world;
   int step_count;
-  Cairo::RefPtr<Cairo::PsSurface> surface;
+  Cairo::RefPtr<Cairo::ImageSurface> surface;
 
 };
 
