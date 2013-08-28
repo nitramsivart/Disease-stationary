@@ -1,5 +1,5 @@
 #define PERSON_BUFFER 100
-#define NUM_PEOPLE    6400
+#define NUM_PEOPLE    250000
 #define DAYS_INFECTED 10
 //#define EXP_PARAMETER 53.0
 #define EXP_PARAMETER 70.0
@@ -40,15 +40,15 @@ private:
   int populate_people(person *, int);
   int print_person(char *, person *);
   bool contact_occurs(person, person);
-  float toroidal_distance(float, float, float, float);
+  double toroidal_distance(double, double, double, double);
   int infect(int);
   int cure(int);
   int progress_sickness(int);
-  int populate_matrix(unsigned long **, person *, int, float (World::*)(float));
-  unsigned long exp_contact(person *, person *, float (World::*)(float));
-  float linear_dist(float);
-  float exp_dist(float);
-  float pow_dist(float);
+  int populate_matrix(unsigned long **, person *, int, double (World::*)(double));
+  unsigned long exp_contact(person *, person *, double (World::*)(double));
+  double linear_dist(double);
+  double exp_dist(double);
+  double pow_dist(double);
 
   //A list of all people that exist.
   person* master_list;

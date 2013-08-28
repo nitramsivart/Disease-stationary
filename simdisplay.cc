@@ -4,9 +4,10 @@
 // Constructor creates the world which contains all simulation information.
 SimDisplay::SimDisplay()
 {
-  step_count = 8;
+  step_count = 35;
   world = new World();
-  surface = Cairo::PsSurface::create("image.ps", 1000, 1000);
+  int grid_wid = sqrt(world->get_count());
+  surface = Cairo::PsSurface::create("image-3.ps", grid_wid, grid_wid);
   for(int i = 0; i < step_count; i++)
     world->step();
 
@@ -65,8 +66,9 @@ bool SimDisplay::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
   printf("drawing\n");
   // This is where we draw on the window
     Gtk::Allocation allocation = get_allocation();
-    const int width = 1000;//allocation.get_width();
-    const int height = 1000;//allocation.get_height();
+    int grid_wid = sqrt(world->get_count());
+    const int width = grid_wid;//allocation.get_width();
+    const int height = grid_wid;//allocation.get_height();
     int lesser = MIN(width, height);
 
     // coordinates for the center of the window
@@ -74,7 +76,8 @@ bool SimDisplay::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
     xc = width / 2;
     yc = height / 2;
 
-    cr->set_line_width(lesser * 0.00001 * 1);  // outline thickness changes
+    cr->set_line_width(0);
+    //cr->set_line_width(0*lesser * 0.00001 * 1);  // outline thickness changes
                                         // with window size
 
     
@@ -83,36 +86,32 @@ bool SimDisplay::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
     int i;
     for(i = 0; i < world->get_count(); i++) {
       cr->save();
-      xc = people[i].x * width;
-      yc = people[i].y * height;
-      double sq = (width / (sqrt(world->get_count())+1));
-      cr->rectangle(xc - sq/2, yc - sq/2, sq, sq); // rectangle
+      xc = people[i].x * grid_wid;
+      yc = people[i].y * grid_wid;
+      double sq = 1.03 * (width / (sqrt(world->get_count())));
+      cr->rectangle(xc, yc, 1, 1); // rectangle
+      //cr->rectangle(xc - sq/2, yc - sq/2, sq, sq); // rectangle
       //cr->arc(xc, yc, lesser / 800.0, 0.0, 2.0 * M_PI); // full circle
-      if(people[i].status == 0)
-        cr->set_source_rgba(0.8,0.8,0.8, 1);    // partially translucent
-      else if(people[i].status < 0) 
+      if(people[i].status < 0) {
+        printf("neg status\n");
         cr->set_source_rgba(R7, 1.0);
-      else 
-        switch(people[i].status) {
-          case 6:
-            cr->set_source_rgba(R5, 1); // dark green
-            break;
-          case 5:
-            cr->set_source_rgba(R4, 1); // green
-            break;
-          case 4:
-            cr->set_source_rgba(R3, 1); // yellow
-            break;
-          case 3:
-            cr->set_source_rgba(R2, 1); // orange
-            break;
-          case 2:
-            cr->set_source_rgba(R1, 1); // red
-            break;
-          default:
-            cr->set_source_rgba(R6, 1); // red
-        }
-        //cr->set_source_rgba(((float)people[i].status)/DAYS_INFECTED, 0.0, 0.0, .7);
+      }
+      else if(people[i].status == 0)
+        cr->set_source_rgba(0.8,0.8,0.8, 1); // Susceptible
+      else if(people[i].status <= 5)
+        cr->set_source_rgba(R1, 1); // red
+      else if(people[i].status <= 10)
+        cr->set_source_rgba(R2, 1); // red
+      else if(people[i].status <= 15)
+        cr->set_source_rgba(R3, 1); // red
+      else if(people[i].status <= 20)
+        cr->set_source_rgba(R4, 1); // red
+      else if(people[i].status <= 25)
+        cr->set_source_rgba(R5, 1); // red
+      else if(people[i].status <= 30)
+        cr->set_source_rgba(R6, 1); // red
+      else
+        cr->set_source_rgba(R7, 1); // red
       cr->fill_preserve();
       cr->restore();  // back to opaque black
       cr->stroke();

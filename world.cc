@@ -19,15 +19,8 @@ World::World() {
   num_s = master_count;
   num_r = 0;
   printf("master_count: %d\n", master_count);
-  //master_matrix = (unsigned long**) malloc(master_count * sizeof(long*));
-  //for (int i = 0; i < master_count; i++)  
-   //master_matrix[i] = (unsigned long*) malloc(master_count*sizeof(long));  
-  
-  //populate_matrix(master_matrix, master_list, master_count, &World::exp_dist);
-  //we need to generate pairwise probabilities. Assuming this person gets the disease, 
-  //what is the expected number of days to pass it to one of his neighbors, based on the contact distribution
-  //ceil(log(1-x)/log(1-p))
   simtime = 0;
+
   int closest_index = 0;
   for (int i = 0; i < master_count; i++) {
     if(toroidal_distance(master_list[i].x, .5, master_list[i].y, .5) < toroidal_distance(master_list[closest_index].x, .5, master_list[closest_index].y, .5))
@@ -50,56 +43,42 @@ int World::get_count() {
 }
 
 
-int World::populate_matrix(unsigned long ** matrix, person *people, int n, float (World::*dist_fn)(float)) {
-  int i;
-  int j;
-  for(i = 0; i<n; i++) {
-    for(j = 0; j<n; j++) {
-      if(i == j)
-        matrix[i][j] = 0;
-      else {
-        matrix[i][j] = exp_contact(&people[i], &people[j], dist_fn);
-      }
-    }
-  }
-  return 0;
-}
-
-unsigned long World::exp_contact(person *p1, person *p2, float (World::*dist_fn)(float)) {
-  float d = toroidal_distance(p1->x, p2->x, p1->y, p2->y);
-  float p = (*this.*dist_fn)(d);
-  if(p<.0000001)
-    return 1000000000; //we will never run for more than a billion steps
-  float u = rand()/((float)RAND_MAX + 1);
-  return ceil(log(1-u)/log(1-p));
-}
-
-float World::linear_dist(float d) {
+double World::linear_dist(double d) {
   return d;
 }
 
-float World::exp_dist(float d) {
-  float u = rand()/((float)RAND_MAX + 1);
+double World::exp_dist(double d) {
+  double u = rand()/((double)RAND_MAX + 1);
+
+  double lambda = 62;
+  double min = .5 / sqrt(master_count);
+  double val = min - (1./lambda)*log(1-u);
+  //printf("%f\n", val);
+  return val;
 
   // exponential random variable
   int a = 1;
   int b = 2;
   int c = 3;
-  float r = d * 100;
+  double r = d * 60;
   return pow(a+r, -b) * exp(-r / c);
   //return exp(-EXP_PARAMETER * d);
 }
 
-float World::pow_dist(float d) {
+double World::pow_dist(double d) {
   // uniform random variable in (0, 1)
-  float u = rand()/((float)RAND_MAX + 1);
+
+  double alpha = 2;
+  double min = .5 / sqrt(master_count);
+  double u = rand()/((double)RAND_MAX + 1);
+  double val = min * pow(1-u,-1./(alpha-1));
+  return val;
 
   // power law random variable
   int a = 1;
-  int b = 2;
-  int c = 300;
-  float r = d * 50;
-  return pow(a+r, -b) * exp(-r / c);
+  int b = 3;
+  double r = d * 400;
+  return pow(a+r, -b);
   //return pow(1 + pow(d*POW_R_0, POW_ALPHA), -1);
 }
 
@@ -111,7 +90,6 @@ int World::generate_people(person **all_people, int n) {
   printf("generating people\n");
 	int i;
 	for(i = 0; i < n; i++) {
-    printf("person %d\n", i);
 		populate_person_grid(&((*all_people)[i]), i, (int)sqrt(n), (int)sqrt(n));
 	}
   printf("done generating people\n");
@@ -126,51 +104,12 @@ int World::infect(int index) {
   if(master_list[index].status == SUSCEPTIBLE) {
     master_list[index].status = 1; //DAYS_INFECTED;
     infected.push_back(&master_list[index]);
-    /*
-    unsigned long infect_time;
-    //go through and add all neighbors to the priority queue
-    for(int j = 0; j < master_count; j++) {
-      infect_time = simtime + master_matrix[index][j];
-      //don't add people to the queue if they will be infected after
-      //we are done simulating
-      if(infect_time < MAX_SIM_TIME)
-        master_queue.push(std::make_pair(j, infect_time));
-    }
-    */
     num_i++;
     num_s--;
   }
   return 0;
 }
 
-// Cure the person, but provide the index in i_list
-// We will have problems if people start to not recover in
-// monotonic increasing order
-int World::cure(int index) {
-  int first_infected = num_r;
-  int first_susceptible = num_r + num_i;
-  assert(index >= first_infected && index < first_susceptible);
-
-  // Switch places to maintain list order, if necessary.
-  if(first_infected != index) {
-    person temp = master_list[first_infected];
-    master_list[first_infected] = master_list[index];
-    master_list[index] = temp;
-  }
-
-  master_list[first_infected].status = RECOVERED;
-  num_r++;
-  num_i--;
-  return 0;
-}
-
-int World::progress_sickness(int index) {
-
-  //people don't get better, so we are under the SI model
-  master_list[index].status++;
-  //if(master_list[index].status == SUSCEPTIBLE)
-  //  cure(index);
-}
 
 
 // Prints all people in the world to the terminal
@@ -190,41 +129,18 @@ int World::print_people(person* list) {
 // Creates a person with a random location between 0 and 1
 int World::populate_person_rand(person * p) {
 	p->status = 0;
-	p->x = rand()/((float)RAND_MAX + 1);
-	p->y = rand()/((float)RAND_MAX + 1);
+	p->x = rand()/((double)RAND_MAX + 1);
+	p->y = rand()/((double)RAND_MAX + 1);
 	return 0;
 }
 
 // Creates a person on a grid
 int World::populate_person_grid(person * p, int index, int rows, int cols) {
 	p->status = 0;
-  double wid = 1.0 / (rows+1);
-	p->x = (index % cols) * wid + wid;
-	p->y = (index/cols) * wid + wid;
+  double wid = 1.0 / (rows);
+	p->x = (index % cols) * wid + wid/2;
+	p->y = (index/cols) * wid + wid/2;
 	return 0;
-}
-
-int World::populate_people(person *people, int n) {
-  ifstream file("data/data31.txt", ifstream::in);
-  //these are hardcoded for now, maybe they should be read from the file in the future
-  int xdim = 201;
-  int ydim = 201;
-  char value[30];
-  int i;
-  int j = 0;
-	for(i = 0; i < n; i++) {
-    people[j].status = 0;
-    file.getline(value, 30, ' ');
-    people[j].x = atof(value);
-    file.getline(value, 30, '\n');
-    people[j].y = atof(value);
-    //By incrementing j every other time we halve the data size
-    if(0 == i%1) {
-      j++;
-    }
-  }
-  printf("%d\n", j);
-  return j;
 }
 
 // Takes a person and generates a string representing that person
@@ -233,16 +149,62 @@ int World::print_person(char *str, person *p) {
 	return 0;
 }
 
+// This function takes an array of sorted "lowest values", where the first number is highest
+// and tries to replace the highest one if new_val is lower than it. also maintains sorting
+void try_replace(double *vals, int *indices, int size, double new_val, int new_i) {
+  if(new_val >= vals[0])
+    return;
+  for(int k = size-1; k >= 0; k--) {
+    if(new_val < vals[k]) {
+      //percolate values up
+      for(int j = 0; j < k; j++) {
+        vals[j] = vals[j+1];
+        indices[j] = indices[j+1];
+      }
+      //replace lowest applicable value
+      vals[k] = new_val;
+      indices[k] = new_i;
+      return;
+    }
+  }
+}
+
 // Progress the world one step, propegating infection status when appropriate
 bool World::step() {
   //progress simulation time by 1
   simtime++;
 
   printf("simtime: %d\n", simtime);
+  //int num_connections = 8; // this is hardcoded, requires changing the below arrays
   int start_size = infected.size();
   for(int i = 0; i < start_size; i++) {
-    float rand_index = rand() % NUM_PEOPLE;
-    infect(rand_index);
+    person p1 = *infected[i];
+    //printf("x, y: %f, %f\n\n\n", p1.x, p1.y);
+    //double lowest_vals[] = {INT_MAX,INT_MAX,INT_MAX,INT_MAX,INT_MAX,INT_MAX,INT_MAX,INT_MAX};
+    //int lowest_indices[] = {-1,-1,-1,-1,-1,-1,-1,-1};
+    int p2_index = 0;
+    while(true) {
+      double r = pow_dist(0);
+      double theta = 2 * M_PI * rand()/((double)RAND_MAX+1);
+      double x = p1.x + r * cos(theta);
+      double y = p1.y + r * sin(theta);
+      if(x > 1 || x < 0 || y > 1 || y < 0)
+        continue;
+      //convert these coordinates to an index:
+      int grid_wid = sqrt(master_count);
+      double wid = 1.0 / grid_wid;
+      // round x, y to nearest
+      int col = x * grid_wid;
+      int row = y * grid_wid;
+      // we've selected the same point as p1
+      if(col * wid + wid/2 == p1.x && row * wid + wid/2 == p1.y)
+        continue;
+      p2_index = row * grid_wid + col;
+      break;
+    }
+    double kappa = 1;
+    if((rand()/((double)RAND_MAX + 1)) < kappa)
+      infect(p2_index);
   }
   for(int i = 0; i < master_count; i++) {
     if(master_list[i].status > 0) {
@@ -250,45 +212,15 @@ bool World::step() {
     }
   }
   return (num_i != 0);
-
-
-  while(master_queue.top().second <= simtime) {
-    infect(master_queue.top().first);
-    master_queue.pop();
-  }
-
-  int i = 0;
-  for (i = 0; i < master_count; i++) {
-    if(master_list[i].status > 0) {
-      master_list[i].status++;
-    }
-  }
-  return (num_i != 0);
 }
 
 
-
-// Randomly simulate contact between people. People are more likely to
-// come into contact if they are closer to each other.
-bool World::contact_occurs(person a, person b) {
-  float d = toroidal_distance(a.x, b.x, a.y, b.y);
-
-  // uniform random variable in (0, 1)
-  float u = rand()/((float)RAND_MAX + 1);
-
-  // exponential random variable
-  //float e = exp(-EXP_PARAMETER * d);
-
-  // power law random variable
-  float p = pow(1 + pow(d*POW_R_0, POW_ALPHA), -1);
-  return u < p;
-}
 
 // Returns distance between two points on a plane, where the edges of the plane
 // are assumed to be "wrapped" to the other side.
-float World::toroidal_distance(float x1, float x2, float y1, float y2) {
-  float dx = x1 - x2;
-  float dy = y1 - y2;
+double World::toroidal_distance(double x1, double x2, double y1, double y2) {
+  double dx = x1 - x2;
+  double dy = y1 - y2;
   /*
   if(dx < 0)
     dx = dx * -1.0;
